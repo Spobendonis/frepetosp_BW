@@ -3,7 +3,14 @@ from typing import *
 
 class Tree:
 	def __init__(self):
-		self._root = Node()
+		self._root = TreeNode()
+		self._leaves: List[TreeNode] = []
+
+	def setLeaves(self, leaves):
+		self._leaves = leaves
+
+	def getLeaves(self):
+		return self._leaves
 
 	def getRoot(self):
 		return self._root
@@ -12,7 +19,7 @@ class Tree:
 		self.printSubtree(self._root)
 		print()
 
-	def printSubtree(self, root: Node):
+	def printSubtree(self, root: TreeNode):
 		if root.getLabel() != "":
 			print(root.getLabel(), end="")
 		else:
@@ -22,8 +29,18 @@ class Tree:
 			self.printSubtree(root.getRight())
 			print(")", end="")
 
-class Node:
-	def __init__(self, left: Node = None, right: Node = None, parent: Node = None, label: str = ""):
+	def sPrintTree(self) -> str:
+			return f"{self.sPrintSubtree(self._root)};"
+
+	def sPrintSubtree(self, root: TreeNode) -> str:
+			if root.getLabel() != "":
+				return root.getLabel()
+			else:
+				return f"({self.sPrintSubtree(root.getLeft())},{self.sPrintSubtree(root.getRight())})"
+					
+
+class TreeNode:
+	def __init__(self, left: TreeNode = None, right: TreeNode = None, parent: TreeNode = None, label: str = ""):
 		self._left = left
 		self._right = right
 		self._parent = parent
@@ -52,6 +69,12 @@ class Node:
 
 	def setParent(self, parent):
 		self._parent = parent
+
+class Graph:
+	def __init__(self):
+		pass
+
+def generateDisplayGraph(trees: List[Tree]) -> Graph: ...
 
 class BranchDecomposition:
 	def __init__(self):

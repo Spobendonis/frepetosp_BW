@@ -1,5 +1,8 @@
-from solver import Solver
 import sys
+
+from solver import Solver
+from graph import Graph, generateDisplayGraph
+from problem_instance import ProblemInstance
 
 
 from input_parser import RootedInputParser
@@ -9,8 +12,14 @@ def main():
 	file = "tiny/tiny01.nw" if len(args) == 0 else args[0]
 
 	parser = RootedInputParser(file)
-	problemInstance = parser.parseInput()
-	solver = Solver(problemInstance)
+	trees = parser.parseInput()
+
+	dg = generateDisplayGraph(trees)
+	bd = 0	# TODO
+
+	instance = ProblemInstance(trees, dg, bd)
+
+	solver = Solver()
 	solver.solve()
 
 if __name__ == "__main__":
