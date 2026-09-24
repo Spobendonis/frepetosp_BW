@@ -9,7 +9,7 @@ def main():
 	file = "tiny/tiny01.nw" if len(args) == 0 else args[0]
 
 	parser = RootedInputParser(file)
-	problemInstance = parser.Parse()
+	problemInstance = parser.parseInput()
 	solver = Solver(problemInstance)
 	solver.solve()
 
