@@ -1,4 +1,4 @@
-from input_parser import ProblemInstance
+from problem_instance import ProblemInstance
 
 class Solver:
 	def __init__(self, problemInstance: ProblemInstance):

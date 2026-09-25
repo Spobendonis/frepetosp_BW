@@ -9,17 +9,22 @@ from input_parser import RootedInputParser
 
 def main():
 	args = sys.argv[1:]
-	file = "tiny/tiny01.nw" if len(args) == 0 else args[0]
+	file = "input/tiny01.nw" if len(args) == 0 else args[0]
 
+	# Get trees from newick files
 	parser = RootedInputParser(file)
 	trees = parser.parseInput()
 
+	# Generate Display Graph
 	dg = generateDisplayGraph(trees)
+	dg.printAdjacencyMatrix()
+	
+	# Generate Branch Decomposition
 	bd = 0	# TODO
 
 	instance = ProblemInstance(trees, dg, bd)
 
-	solver = Solver()
+	solver = Solver(instance)
 	solver.solve()
 
 if __name__ == "__main__":
