@@ -54,13 +54,15 @@ class Tree:
 		else:
 			print(f'{prefix}{connector}{node_id}')
 
-		children = []
+		children: List[TreeNode] = []
 
-		if node.getRight() is not None:
-			children.append(node.getRight())
+		right = node.getRight()
+		if right is not None:
+			children.append(right)
 
-		if node.getLeft() is not None:
-			children.append(node.getLeft())
+		left = node.getLeft()
+		if left is not None:
+			children.append(left)
 
 		# Print children recursively
 		for i, child in enumerate(children):
@@ -105,10 +107,10 @@ class TreeNode:
 	def getLabel(self):
 		return self._label
 
-	def getLeft(self):
+	def getLeft(self) -> TreeNode | None:
 		return self._left
 
-	def getRight(self):
+	def getRight(self) -> TreeNode | None:
 		return self._right
 
 	def getParent(self) -> TreeNode | None:
@@ -124,13 +126,13 @@ class TreeNode:
 	def setLabel(self, label):
 		self._label = label
 
-	def setLeft(self, child):
+	def setLeft(self, child: TreeNode | None):
 		self._left = child
 
-	def setRight(self, child):
+	def setRight(self, child: TreeNode | None):
 		self._right = child
 
-	def setParent(self, parent):
+	def setParent(self, parent: TreeNode | None):
 		self._parent = parent
 
 class Graph:
