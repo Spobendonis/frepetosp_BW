@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import *
+from typing import Dict, List
 from functools import cache
 
 class Tree:

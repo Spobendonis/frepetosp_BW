@@ -25,7 +25,7 @@ class BranchDecompositionGenerator():
 
 		return bdParser.parseInput()
 
-	def run_algorithm(self, algorithm_name: str, graph_input: str, output_file: Path=None):
+	def run_algorithm(self, algorithm_name: str, graph_input: str, output_file: Path):
 		with tempfile.NamedTemporaryFile(
 			mode="w",
 			suffix=".txt",
@@ -50,8 +50,8 @@ class BranchDecompositionGenerator():
 				check=True,
 			)
 
-	def run_algorithm1(self, graph_input: str, output_file: Path=None):
+	def run_algorithm1(self, graph_input: str, output_file: Path):
 		self.run_algorithm("Algorithm1", graph_input, output_file)
 
-	def run_algorithm2(self, graph_input: str, output_file: Path=None):
+	def run_algorithm2(self, graph_input: str, output_file: Path):
 		self.run_algorithm("Algorithm2", graph_input, output_file)
