@@ -9,10 +9,6 @@ class RootedInputParser:
 		self._path = Path(path)
 		self._curId = 0
 
-	def __init__(self, path: Path):
-			self._path = path
-			self._curId = 0
-		
 	def initCurId(self, id):
 		self._curId = id
 
@@ -51,20 +47,25 @@ class RootedInputParser:
 			match char:
 				case '(':	# Creates a left child of Cur, and updates Cur to that child
 					l = TreeNode(parent = cur)
+					assert cur is not None
 					cur.setLeft(l)
 					cur = l
 					tree.addNode(cur)
 				case ')':	# Moves Cur up one level in the tree
 					if label:	# See case _: for explanation
+						assert cur is not None
 						cur.setLabel(label)
 						cur.setId(int(label))
 						tree.addLeaf(cur)
 						label = ""
-						
+
+					assert cur is not None
 					cur = cur.getParent()
+					assert cur is not None
 					cur.setId(self.getCurId())
 				case ',':	# Creates a right sibling to Cur, and updates Cur to that sibling
 					if label:	# See case _: for explanation
+						assert cur is not None
 						cur.setLabel(label)
 						cur.setId(int(label))
 						tree.addLeaf(cur)
@@ -72,6 +73,7 @@ class RootedInputParser:
 
 					cur = cur.getParent()
 					r = TreeNode(parent = cur)
+					assert cur is not None
 					cur.setRight(r)
 					cur = r
 					tree.addNode(cur)
@@ -87,10 +89,13 @@ class BranchDecompositionParser():
 		self._path = path
 
 	def parseInput(self) -> BranchDecomposition:
-		bd = BranchDecomposition()
+		bw = 2 #TODO: Get that shit from the output
+		bd = BranchDecomposition(bw)
 		with open(self._path, 'r') as f:
 			lines = f.readlines()
 			for line in lines:
-				pass
+				if ":" in line:
+					# Internal node
+					pass
 
 		return bd

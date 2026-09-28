@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import *
+from functools import cache
 
 class Tree:
 	def __init__(self):
@@ -10,7 +11,7 @@ class Tree:
 	# Getters
 	def getRoot(self):
 		return self._root
-	
+
 	def getLeaves(self):
 		return self._leaves
 
@@ -80,15 +81,17 @@ class Tree:
 	def sPrintTree(self) -> str:
 			return f"{self.sPrintSubtree(self._root)};"
 
-	def sPrintSubtree(self, root: TreeNode) -> str:
+	def sPrintSubtree(self, root: TreeNode | None) -> str:
+			if root is None:
+				return ""
 			if root.getLabel() != "":
 				return root.getLabel()
 			else:
 				return f"({self.sPrintSubtree(root.getLeft())},{self.sPrintSubtree(root.getRight())})"
-					
+
 
 class TreeNode:
-	def __init__(self, id: int = -1, left: TreeNode = None, right: TreeNode = None, parent: TreeNode = None, label: str = ""):
+	def __init__(self, id: int = -1, left: TreeNode | None = None, right: TreeNode | None = None, parent: TreeNode | None = None, label: str = ""):
 		self._id = id
 		self._left = left
 		self._right = right
@@ -108,7 +111,7 @@ class TreeNode:
 	def getRight(self):
 		return self._right
 
-	def getParent(self):
+	def getParent(self) -> TreeNode | None:
 		return self._parent
 
 	# Setters
@@ -153,7 +156,7 @@ class Graph:
 	# Adders
 	def addVertexMapping(self, key: int, value: TreeNode):
 		self._vertexMap[key].append(value)
- 
+
 	def addEdge(self, u: int, v: int):
 		if v not in self._edges[u]:
 			self._edges[u].add(v)
@@ -205,23 +208,65 @@ def generateDisplayGraph(trees: List[Tree]) -> Graph:
 		for n in t.getNodes():	# TODO: This is ugly, and (unnecassarily) adds each edge twice (since the add/remove edge already adds it twice). Probably make good
 			dg.addVertexMapping(n.getId(), n)
 			try:
-				dg.addEdge(n.getId(), n.getParent().getId())
+				parent = n.getParent()
+				if parent is not None:
+					dg.addEdge(n.getId(), parent.getId())
 			except AttributeError: pass # Expected error, since n.getParent() can be None
 			try:
-				dg.addEdge(n.getId(), n.getLeft().getId())
+				left = n.getLeft()
+				if left is not None:
+					dg.addEdge(n.getId(), left.getId())
 			except AttributeError: pass # Expected error, since n.getLeft() can be None
 			try:
-				dg.addEdge(n.getId(), n.getRight().getId())
+				right = n.getRight()
+				if right is not None:
+					dg.addEdge(n.getId(), right.getId())
 			except AttributeError: pass # Expected error, since n.getRight() can be None
 
 	return dg
 
 class BranchDecomposition:
-	def __init__(self):
-		pass
+	def __init__(self, bw: int):
+		self.root: BranchDecompositionNode = BranchDecompositionNode(0)
+		self.branchwidth = bw
+
+	def getBranchwidth(self):
+		return self.branchwidth
+
+	def getRoot(self):
+		return self.root
+
+class DPState():
+	def __init__(self, x: set, P: set, R: set):
+		self._x = x
+		self._P = P
+		self._R = R
+
+	def __repr__(self):
+		return f"DPState(x={self._x}, P={self._P}, R={self._R})"
 
 class BranchDecompositionNode():
-	def __init__(self, left: BranchDecompositionNode, right:BranchDecompositionNode):
+	def __init__(self, node_id: int, left: BranchDecompositionNode | None = None, right: BranchDecompositionNode | None = None, vertex_set: set[int] | None = None):
 		self.left = left
+		self.id = node_id
 		self.right = right
-		self.states: Dict = {} 
+		self.parent: BranchDecompositionNode | None = None
+		self.states: Dict[DPState, int] = {}
+		self._vertexSet: set[int] = vertex_set if vertex_set is not None else set()
+
+	@cache
+	def mid(self, other: BranchDecompositionNode) -> set[int]:
+		return self.getVertexSet(set([other.id])) & other.getVertexSet(set([self.id]))
+
+	def getVertexSet(self, explored: set[int]) -> set[int]:
+		if self._vertexSet:
+			return self._vertexSet
+		returnedSet = set()
+		if self.left is not None and self.left.id not in explored:
+			returnedSet.update(self.left.getVertexSet(explored | {self.id}))
+		if self.right is not None and self.right.id not in explored:
+			returnedSet.update(self.right.getVertexSet(explored | {self.id}))
+		if self.parent is not None and self.parent.id not in explored:
+			returnedSet.update(self.parent.getVertexSet(explored | {self.id}))
+		return returnedSet
+
