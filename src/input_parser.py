@@ -1,15 +1,20 @@
 from __future__ import annotations
+from pathlib import Path
 from typing import *
 
-from graph import Tree, TreeNode
+from graph import Tree, TreeNode, BranchDecomposition
 
 class RootedInputParser:
-	def __init__(self, fileName: str):
-		self._fileName = fileName
+	def __init__(self, path: str):
+		self._path = Path(path)
 		self._curId = 0
 
+	def __init__(self, path: Path):
+			self._path = path
+			self._curId = 0
+		
 	def initCurId(self, id):
-		self._curId = id-1
+		self._curId = id
 
 	def getCurId(self):
 		id = self._curId
@@ -19,7 +24,7 @@ class RootedInputParser:
 	def parseInput(self) -> List[Tree]:
 		trees: List[Tree] = []
 
-		with open(self._fileName, 'r') as f:
+		with open(self._path, 'r') as f:
 			lines = f.readlines()
 			for line in lines:
 				if line[0] != '#':
@@ -33,9 +38,6 @@ class RootedInputParser:
 				else:
 					print("# IGNORED: ", line)
 
-		for t in trees:
-			t.printTree()
-		
 		return trees
 
 	def parseNewick(self, newick: str) -> Tree:
@@ -55,7 +57,8 @@ class RootedInputParser:
 				case ')':	# Moves Cur up one level in the tree
 					if label:	# See case _: for explanation
 						cur.setLabel(label)
-						cur.setId(int(label)-1)
+						cur.setId(int(label))
+						tree.addLeaf(cur)
 						label = ""
 						
 					cur = cur.getParent()
@@ -63,7 +66,8 @@ class RootedInputParser:
 				case ',':	# Creates a right sibling to Cur, and updates Cur to that sibling
 					if label:	# See case _: for explanation
 						cur.setLabel(label)
-						cur.setId(int(label)-1)
+						cur.setId(int(label))
+						tree.addLeaf(cur)
 						label = ""
 
 					cur = cur.getParent()
@@ -76,5 +80,17 @@ class RootedInputParser:
 					return tree
 				case _:		# Assumes any other characters is a label of a leaf
 					label += char	# Accumulates the label across multiple reads. Once "," or ")" is hit, the label is done, and written into the leaf before it is updated
-					tree.addLeaf(cur)
 		raise RuntimeError("Missing end character detected")
+
+class BranchDecompositionParser():
+	def __init__(self, path: Path):
+		self._path = path
+
+	def parseInput(self) -> BranchDecomposition:
+		bd = BranchDecomposition()
+		with open(self._path, 'r') as f:
+			lines = f.readlines()
+			for line in lines:
+				pass
+
+		return bd

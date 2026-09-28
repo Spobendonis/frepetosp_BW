@@ -132,8 +132,10 @@ class TreeNode:
 
 class Graph:
 	def __init__(self, vertexCount):
-		self._vertexMap: Dict[int, List[TreeNode]] = {}	# Every vertex in the DG maps to the TreeNode it came from in the corresponding tree(s for the leaves)
-		self._edges = [[0 for _ in range(vertexCount)] for _ in range(vertexCount)]
+		self._vertexCount = vertexCount
+		self._edgeCount = 0
+		self._vertexMap: Dict[int, List[TreeNode]] = {i: [] for i in range(1, vertexCount+1)}	# Every vertex in the DG maps to the TreeNode it came from in the corresponding tree(s for the leaves)
+		self._edges: Dict[int, set[int]] = {i: set() for i in range(1, vertexCount+1)}
 
 	# Getters
 	def getVertexMap(self):
@@ -142,28 +144,53 @@ class Graph:
 	def getEdges(self):
 		return self._edges
 
+	def getEdgesOfVertex(self, v):
+		return self._edges[v]
+
 	def getVertexInTrees(self, id: int):
 		return self._vertexMap[id]
 
 	# Adders
 	def addVertexMapping(self, key: int, value: TreeNode):
-		if key in self._vertexMap:
-			self._vertexMap[key].append(value)
-		else:
-			self._vertexMap[key] = [value]
+		self._vertexMap[key].append(value)
  
 	def addEdge(self, u: int, v: int):
-		self._edges[u][v] = 1
-		self._edges[v][u] = 1
+		if v not in self._edges[u]:
+			self._edges[u].add(v)
+			self._edgeCount += 1
+
+		if u not in self._edges[v]:
+			self._edges[v].add(u)
+			self._edgeCount += 1
 
 	def removeEdge(self, u: int, v: int):
-		self._edges[u][v] = 0
-		self._edges[v][u] = 0
+		if v in self._edges[u]:
+			self._edges[u].remove(v)
+			self._edgeCount -= 1
+
+		if u in self._edges[v]:
+			self._edges[v].remove(u)
+			self._edgeCount -= 1
 
 	# Debug
 	def printAdjacencyMatrix(self):
 		for r in self._edges:
 			print(r)
+
+	def printGraph(self):
+		print(self.sPrintGraph())
+
+	def sPrintGraph(self):
+		witnessed = set()
+
+		res = (f"p tw {self._vertexCount} {self._edgeCount//2}\n")	# tw gaslights the bw implementation that this is a tree width problem
+		for u in range(1, self._vertexCount+1):
+			for v in self.getEdgesOfVertex(u):
+				uId = (u, v) if u < v else (v, u)
+				if uId not in witnessed:
+					res += f"{u} {v}\n"
+					witnessed.add(uId)
+		return res
 
 def generateDisplayGraph(trees: List[Tree]) -> Graph:
 	# Can technically be changed to: trees[0].getNumNodes + ((len(trees)-1) * (trees[0].getNumNodes - trees[0].getNumLeaves)) // but that is less descriptive imo
@@ -192,3 +219,9 @@ def generateDisplayGraph(trees: List[Tree]) -> Graph:
 class BranchDecomposition:
 	def __init__(self):
 		pass
+
+class BranchDecompositionNode():
+	def __init__(self, left: BranchDecompositionNode, right:BranchDecompositionNode):
+		self.left = left
+		self.right = right
+		self.states: Dict = {} 
