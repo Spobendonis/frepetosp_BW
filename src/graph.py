@@ -207,23 +207,20 @@ def generateDisplayGraph(trees: List[Tree]) -> Graph:
 
 	for t in trees:
 		# Adds all the edges in the trees to the display graph
-		for n in t.getNodes():	# TODO: This is ugly, and (unnecassarily) adds each edge twice (since the add/remove edge already adds it twice). Probably make good
+		for n in t.getNodes():
 			dg.addVertexMapping(n.getId(), n)
-			try:
-				parent = n.getParent()
-				if parent is not None:
-					dg.addEdge(n.getId(), parent.getId())
-			except AttributeError: pass # Expected error, since n.getParent() can be None
-			try:
-				left = n.getLeft()
-				if left is not None:
-					dg.addEdge(n.getId(), left.getId())
-			except AttributeError: pass # Expected error, since n.getLeft() can be None
-			try:
-				right = n.getRight()
-				if right is not None:
-					dg.addEdge(n.getId(), right.getId())
-			except AttributeError: pass # Expected error, since n.getRight() can be None
+			
+			parent = n.getParent()
+			if parent is not None:
+				dg.addEdge(n.getId(), parent.getId())
+
+			left = n.getLeft()
+			if left is not None:
+				dg.addEdge(n.getId(), left.getId())
+
+			right = n.getRight()
+			if right is not None:
+				dg.addEdge(n.getId(), right.getId())
 
 	return dg
 
