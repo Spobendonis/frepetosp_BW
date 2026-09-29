@@ -229,14 +229,33 @@ def generateDisplayGraph(trees: List[Tree]) -> Graph:
 
 class BranchDecomposition:
 	def __init__(self, bw: int):
-		self.root: BranchDecompositionNode = BranchDecompositionNode(0)
-		self.branchwidth = bw
+		self._root: BranchDecompositionNode = BranchDecompositionNode(0)
+		self._branchwidth = bw
 
 	def getBranchwidth(self):
-		return self.branchwidth
+		return self._branchwidth
 
 	def getRoot(self):
-		return self.root
+		return self._root
+
+	def printBranchDecomposition(self):
+		self.printSubtree(self.getRoot(), 0)
+
+	def printSubtree(self, node: BranchDecompositionNode, depth: int):
+		vs = node.getVertexSet()
+		spaces = "  " * depth
+		if vs:
+			print(f"{spaces}{vs} ({node.getId()})")
+			return
+		else:
+			print(f"{spaces}:({node.getId()})")
+			l = node.getLeft()
+			r = node.getRight()
+
+			if l is not None:
+				self.printSubtree(l, depth+1)
+			if r is not None:
+				self.printSubtree(r, depth+1)
 
 class DPState():
 	def __init__(self, x: set, P: set, R: set):
@@ -248,27 +267,68 @@ class DPState():
 		return f"DPState(x={self._x}, P={self._P}, R={self._R})"
 
 class BranchDecompositionNode():
-	def __init__(self, node_id: int, left: BranchDecompositionNode | None = None, right: BranchDecompositionNode | None = None, vertex_set: set[int] | None = None):
-		self.left = left
-		self.id = node_id
-		self.right = right
-		self.parent: BranchDecompositionNode | None = None
-		self.states: Dict[DPState, int] = {}
+	def __init__(self, node_id : int = -1, left: BranchDecompositionNode | None = None, right: BranchDecompositionNode | None = None, vertex_set: set[int] | None = None):
+		self._id = node_id
+		self._left = left
+		self._right = right
+		self._parent: BranchDecompositionNode | None = None
+		self._states: Dict[DPState, int] = {}
 		self._vertexSet: set[int] = vertex_set if vertex_set is not None else set()
+
+	def getId(self) -> int:
+		return self._id
+	
+	def getLeft(self) -> BranchDecompositionNode | None:
+		return self._left
+
+	def getRight(self) -> BranchDecompositionNode | None:
+		return self._right
+
+	def getParent(self) -> BranchDecompositionNode | None:
+		return self._parent
+
+	def getVertexSet(self):
+		return self._vertexSet
+
+	def setId(self, id):
+		if self._id != -1:
+			self._id = id
+		else:
+			raise RuntimeError(f"Tried updating a Branch Decomposition Node Id: {self._id} to {id}")
+
+	def setLeft(self, node):
+		self._left = node
+
+		
+	def setRight(self, node):
+		self._right = node
+
+		
+	def setParent(self, node: BranchDecompositionNode):
+		self._parent = node
+
+	def setVertexSet(self, vertices: set[int]):
+		self._vertexSet = vertices
+
+	def addState(self, key: DPState, value):
+		self._states[key] = value
 
 	@cache
 	def mid(self, other: BranchDecompositionNode) -> set[int]:
-		return self.getVertexSet(set([other.id])) & other.getVertexSet(set([self.id]))
+		return self.discoverVertexSet(set([other.getId()])) & other.discoverVertexSet(set([self.getId()]))
 
-	def getVertexSet(self, explored: set[int]) -> set[int]:
+	def discoverVertexSet(self, explored: set[int]) -> set[int]:
 		if self._vertexSet:
 			return self._vertexSet
 		returnedSet = set()
-		if self.left is not None and self.left.id not in explored:
-			returnedSet.update(self.left.getVertexSet(explored | {self.id}))
-		if self.right is not None and self.right.id not in explored:
-			returnedSet.update(self.right.getVertexSet(explored | {self.id}))
-		if self.parent is not None and self.parent.id not in explored:
-			returnedSet.update(self.parent.getVertexSet(explored | {self.id}))
+		l = self.getLeft()
+		if l is not None and l.getId() not in explored:
+			returnedSet.update(l.discoverVertexSet(explored | {self._id}))
+		r = self.getRight()
+		if r is not None and r.getId() not in explored:
+			returnedSet.update(r.discoverVertexSet(explored | {self._id}))
+		p = self.getParent()
+		if p is not None and p.getId() not in explored:
+			returnedSet.update(p.discoverVertexSet(explored | {self._id}))
 		return returnedSet
 

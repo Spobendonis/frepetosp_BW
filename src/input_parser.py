@@ -1,10 +1,12 @@
 from __future__ import annotations
+from io import TextIOWrapper
 from pathlib import Path
 from typing import List
+import re
 
-from graph import Tree, TreeNode, BranchDecomposition
+from graph import BranchDecompositionNode, Tree, TreeNode, BranchDecomposition
 
-class RootedInputParser:
+class NewickParser:
 	def __init__(self, path: str):
 		self._path = Path(path)
 		self._curId = 0
@@ -87,15 +89,45 @@ class RootedInputParser:
 class BranchDecompositionParser():
 	def __init__(self, path: Path):
 		self._path = path
+		self._lines = []
+		self._curId = 1
+
+	def getCurId(self):
+		id = self._curId
+		self._curId += 1
+		return id
 
 	def parseInput(self) -> BranchDecomposition:
-		bw = 2 #TODO: Get that shit from the output
+		bw = -1 #TODO: Get that shit from the output
 		bd = BranchDecomposition(bw)
+		cur = bd.getRoot()
 		with open(self._path, 'r') as f:
-			lines = f.readlines()
-			for line in lines:
-				if ":" in line:
-					# Internal node
-					pass
+			self._lines = f.readlines()
+		self.parseBDRec(cur, 0)
 
 		return bd
+
+	# Returns the up-to-date line number that has to be read
+	def parseBDRec(self, cur: BranchDecompositionNode, lineNum: int) -> int:
+		line = self._lines[lineNum]
+		if ":" in line:
+			# Internal node
+			cur.setLeft(BranchDecompositionNode(self.getCurId()))
+			l = cur.getLeft()
+			assert l is not None
+			currentLine = self.parseBDRec(l, lineNum+1)
+
+			cur.setRight(BranchDecompositionNode(self.getCurId()))
+			r = cur.getRight()
+			assert r is not None
+			return self.parseBDRec(r, currentLine)
+		else:
+			regex = r"{([\d].*), ([\d].*)}"
+			res = re.search(regex, line)
+			assert res is not None
+			u, v = map(int,res.groups())
+			verts: set[int] = set()
+			verts.add(u+1) # The Branch decomposition decrements each vertex by 1. Increment to undo this transformation
+			verts.add(v+1)
+			cur.setVertexSet(verts)
+			return lineNum+1

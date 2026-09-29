@@ -7,7 +7,7 @@ from problem_instance import ProblemInstance
 from branch_decomposition_generator import BranchDecompositionGenerator
 
 
-from input_parser import RootedInputParser
+from input_parser import NewickParser
 
 def main():
 	args = sys.argv[1:]
@@ -15,7 +15,7 @@ def main():
 	bdFile = "bd/tiny01.bw" if len(args) == 0 else "bd/"+args[0].split(".")[0]+".gr"	# Gets file name without extension
 
 	# Get trees from newick files
-	parser = RootedInputParser(file)
+	parser = NewickParser(file)
 	trees = parser.parseInput()
 
 	# Generate Display Graph
