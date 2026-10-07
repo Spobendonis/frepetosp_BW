@@ -20,6 +20,7 @@ def main():
 
 	# Generate Display Graph
 	dg = generateDisplayGraph(trees)
+	dg.printGraph()
 	
 	# Generate Branch Decomposition
 	bdGen = BranchDecompositionGenerator("lib/bw.jar", bdFile)
