@@ -1,18 +1,23 @@
 from pathlib import Path
-import sys
+import argparse
 
 from solver import Solver
 from graph import Graph, generateDisplayGraph
 from problem_instance import ProblemInstance
 from branch_decomposition_generator import BranchDecompositionGenerator
+from bd_to_graphviz import writeGraphviz
 
 
 from input_parser import NewickParser
 
 def main():
-	args = sys.argv[1:]
-	file = "input/tiny01.nw" if len(args) == 0 else "input/"+args[0]
-	bdFile = "bd/tiny01.bw" if len(args) == 0 else "bd/"+args[0].split(".")[0]+".gr"	# Gets file name without extension
+	argParser = argparse.ArgumentParser()
+	argParser.add_argument("input", nargs="?", help="Newick file in input/, e.g. mini02.nw")
+	argParser.add_argument("--graphviz", action="store_true", help="Write the branch decomposition as a Graphviz file to graphviz/<name>.dot")
+	args = argParser.parse_args()
+
+	file = "input/tiny01.nw" if args.input is None else "input/"+args.input
+	bdFile = "bd/tiny01.bw" if args.input is None else "bd/"+args.input.split(".")[0]+".gr"	# Gets file name without extension
 
 	# Get trees from newick files
 	parser = NewickParser(file)
@@ -25,6 +30,9 @@ def main():
 	# Generate Branch Decomposition
 	bdGen = BranchDecompositionGenerator("lib/bw.jar", bdFile)
 	bd = bdGen.generate(dg)
+
+	if args.graphviz:
+		writeGraphviz(bd, Path("graphviz") / (Path(bdFile).stem + ".dot"))
 
 	instance = ProblemInstance(trees, dg, bd)
 
